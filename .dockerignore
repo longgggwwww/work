@@ -1,0 +1,6 @@
+.vscode/
+node_modules/
+uploads/
+dist/
+npm-debug.log
+service-account.json

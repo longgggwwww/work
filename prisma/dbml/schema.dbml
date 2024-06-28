@@ -1,0 +1,239 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table Account {
+  uid String [pk]
+  identifier String [unique, not null]
+  provider String [not null]
+  status Boolean [not null, default: true]
+  createdAt DateTime [default: `now()`, not null]
+  signedAt DateTime [default: `now()`, not null]
+  userId Int
+  user User
+  request RegistrationRequest
+}
+
+Table RegistrationRequest {
+  id Int [pk, increment]
+  email String [not null]
+  name String [not null]
+  gender Gender [not null]
+  dateOfBirth DateTime [not null]
+  status RegisterRequestStatus [not null, default: 'PROCESSING']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  accountId String [unique, not null]
+  account Account [not null]
+}
+
+Table User {
+  id Int [pk, increment]
+  email String [unique]
+  status Boolean [not null, default: true]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  branchId Int
+  departmentId Int
+  accounts Account [not null]
+  owned Company [not null]
+  departments Department [not null]
+  employees Employee [not null]
+  profile Profile
+  branch Branch
+  department Department
+  roles Role [not null]
+}
+
+Table Employee {
+  id String [not null]
+  userId Int [not null]
+  companyId Int [not null]
+  assignedAt DateTime [default: `now()`, not null]
+  company Company [not null]
+  user User [not null]
+  positions EmployeeOnPosition [not null]
+
+  indexes {
+    (userId, companyId) [pk]
+    (id, companyId) [unique]
+  }
+}
+
+Table Position {
+  id Int [pk, increment]
+  name String [not null]
+  slug String [unique, not null]
+  color String
+  functions String[] [not null]
+  companyId Int [not null]
+  employees EmployeeOnPosition [not null]
+  company Company [not null]
+}
+
+Table EmployeeOnPosition {
+  employeeUserId Int [not null]
+  employeeCompanyId Int [not null]
+  positionId Int [not null]
+  employee Employee [not null]
+  position Position [not null]
+
+  indexes {
+    (employeeUserId, employeeCompanyId, positionId) [pk]
+  }
+}
+
+Table Profile {
+  id Int [pk, increment]
+  name String [not null]
+  gender Gender [not null]
+  dateOfBirth DateTime [not null]
+  email String
+  phone String
+  image String
+  education String
+  maritalStatus String
+  nationality String
+  insurance String
+  taxCode String
+  userId Int [unique, not null]
+  address Address
+  idcard IdCard
+  user User [not null]
+}
+
+Table Address {
+  id Int [pk, increment]
+  street String [not null]
+  provinCode String [not null]
+  districtCode String [not null]
+  wardCode String [not null]
+  profileId Int [unique, not null]
+  profile Profile [not null]
+}
+
+Table IdCard {
+  id Int [pk, increment]
+  number String [not null]
+  issuePlace String [not null]
+  issueDate DateTime [not null]
+  profileId Int [unique, not null]
+  profile Profile [not null]
+}
+
+Table Role {
+  id Int [pk, increment]
+  name String [not null]
+  slug String [unique, not null]
+  permissions String[] [not null]
+  setting Setting
+  users User [not null]
+}
+
+Table Company {
+  id Int [pk, increment]
+  name String [not null]
+  description String
+  taxCode String [not null]
+  logo String
+  email String
+  address String [not null]
+  provinceCode String [not null]
+  districtCode String [not null]
+  wardCode String [not null]
+  phoneNumber String
+  website String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  ownerId Int
+  branchs Branch [not null]
+  owner User
+  departments Department [not null]
+  employees Employee [not null]
+  positions Position [not null]
+}
+
+Table Branch {
+  id Int [pk, increment]
+  name String [not null]
+  address String [not null]
+  provinceCode String [not null]
+  districtCode String [not null]
+  wardCode String [not null]
+  companyId Int
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  company Company
+  employees User [not null]
+}
+
+Table Department {
+  id Int [pk, increment]
+  name String [not null]
+  description String [not null]
+  managerId Int
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  companyId Int
+  company Company
+  manager User
+  employees User [not null]
+}
+
+Table Setting {
+  id Int [pk, increment]
+  roleId Int [unique, not null]
+  gender Gender [not null, default: 'OTHER']
+  role Role [not null]
+}
+
+Table RoleToUser {
+  rolesId Int [ref: > Role.id]
+  usersId Int [ref: > User.id]
+}
+
+Enum Gender {
+  OTHER
+  MALE
+  FEMALE
+}
+
+Enum RegisterRequestStatus {
+  PROCESSING
+  ACCEPTED
+  REJECTED
+}
+
+Ref: Account.userId > User.id [delete: Cascade]
+
+Ref: RegistrationRequest.accountId - Account.uid [delete: Cascade]
+
+Ref: User.branchId > Branch.id
+
+Ref: User.departmentId - Department.id
+
+Ref: Employee.companyId > Company.id [delete: Cascade]
+
+Ref: Employee.userId > User.id [delete: Cascade]
+
+Ref: Position.companyId > Company.id [delete: Cascade]
+
+Ref: EmployeeOnPosition.(employeeUserId, employeeCompanyId) > Employee.(userId, companyId) [delete: Cascade]
+
+Ref: EmployeeOnPosition.positionId > Position.id [delete: Cascade]
+
+Ref: Profile.userId - User.id [delete: Cascade]
+
+Ref: Address.profileId - Profile.id [delete: Cascade]
+
+Ref: IdCard.profileId - Profile.id [delete: Cascade]
+
+Ref: Company.ownerId > User.id [delete: Set Null]
+
+Ref: Branch.companyId > Company.id [delete: Cascade]
+
+Ref: Department.companyId > Company.id
+
+Ref: Department.managerId > User.id
+
+Ref: Setting.roleId - Role.id
