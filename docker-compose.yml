@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: work-postgres
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=iit
+      - POSTGRES_PASSWORD=anhemiit123
+      - POSTGRES_DB=iit
+    volumes:
+      - ./data:/var/lib/postgresql/data

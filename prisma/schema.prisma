@@ -1,0 +1,248 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  uid                     String                   @id @unique
+  identifier              String                   @unique
+  provider                String
+  status                  Boolean                  @default(true)
+  createdAt               DateTime                 @default(now())
+  signedAt                DateTime                 @default(now())
+  user                    User?
+  userRegistrationRequest UserRegistrationRequest?
+}
+
+model UserRegistrationRequest {
+  id          Int                           @id @default(autoincrement())
+  email       String
+  name        String
+  gender      Gender
+  dateOfBirth DateTime
+  status      UserRegistrationRequestStatus @default(PROCESSING)
+  createdAt   DateTime                      @default(now())
+  updatedAt   DateTime                      @updatedAt
+  accountId   String                        @unique
+  account     Account                       @relation(fields: [accountId], references: [uid], onDelete: Cascade)
+}
+
+model User {
+  id                          Int                          @id @default(autoincrement())
+  email                       String?                      @unique
+  status                      Boolean                      @default(true)
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+  accountId                   String?                      @unique
+  owned                       Company[]
+  companyRegistrationRequests CompanyRegistrationRequest[]
+  departments                 Department[]                 @relation("Manager")
+  companies                   Employee[]
+  profile                     Profile?
+  account                     Account?                     @relation(fields: [accountId], references: [uid])
+  roles                       Role[]                       @relation("RoleToUser")
+}
+
+model Employee {
+  id         String
+  userId     Int
+  companyId  Int
+  assignedAt DateTime               @default(now())
+  company    Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branchs    EmployeeOnBranch[]
+  department EmployeeOnDepartment[]
+  positions  EmployeeOnPosition[]
+
+  @@id([userId, companyId])
+  @@unique([id, companyId])
+}
+
+model EmployeeOnBranch {
+  employeeUserId    Int
+  employeeCompanyId Int
+  branchId          Int
+  branch            Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  employee          Employee @relation(fields: [employeeUserId, employeeCompanyId], references: [userId, companyId], onDelete: Cascade)
+
+  @@id([employeeUserId, employeeCompanyId, branchId])
+}
+
+model EmployeeOnDepartment {
+  employeeUserId    Int
+  employeeCompanyId Int
+  departmentId      Int
+  department        Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  employee          Employee   @relation(fields: [employeeUserId, employeeCompanyId], references: [userId, companyId], onDelete: Cascade)
+
+  @@id([employeeUserId, employeeCompanyId, departmentId])
+}
+
+model Position {
+  id        Int                  @id @default(autoincrement())
+  name      String
+  slug      String               @unique
+  color     String?
+  functions String[]
+  companyId Int
+  employees EmployeeOnPosition[]
+  company   Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model EmployeeOnPosition {
+  employeeUserId    Int
+  employeeCompanyId Int
+  positionId        Int
+  employee          Employee @relation(fields: [employeeUserId, employeeCompanyId], references: [userId, companyId], onDelete: Cascade)
+  position          Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@id([employeeUserId, employeeCompanyId, positionId])
+}
+
+model Profile {
+  id            Int      @id @default(autoincrement())
+  name          String
+  gender        Gender
+  dateOfBirth   DateTime
+  email         String?
+  phoneNumber   String?
+  image         String?
+  education     String?
+  maritalStatus String?
+  nationality   String?
+  insurance     String?
+  taxCode       String?
+  userId        Int      @unique
+  address       Address?
+  idCard        IdCard?
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Address {
+  id                           Int                         @id @default(autoincrement())
+  street                       String?
+  province                     Json
+  district                     Json
+  ward                         Json
+  profileId                    Int?                        @unique
+  companyId                    Int?                        @unique
+  branchId                     Int?                        @unique
+  companyRegistrationRequestId Int?                        @unique
+  branch                       Branch?                     @relation(fields: [branchId], references: [id])
+  company                      Company?                    @relation(fields: [companyId], references: [id])
+  companyRegistrationRequest   CompanyRegistrationRequest? @relation(fields: [companyRegistrationRequestId], references: [id])
+  profile                      Profile?                    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model IdCard {
+  id         Int      @id @default(autoincrement())
+  number     String
+  issuePlace String
+  issueDate  DateTime
+  profileId  Int      @unique
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  permissions String[]
+  setting     Setting?
+  users       User[]   @relation("RoleToUser")
+}
+
+model CompanyRegistrationRequest {
+  id          Int                              @id @default(autoincrement())
+  name        String
+  description String?
+  taxCode     String
+  logo        String?
+  email       String?
+  phoneNumber String?
+  website     String?
+  createdAt   DateTime                         @default(now())
+  updatedAt   DateTime                         @updatedAt
+  ownerId     Int
+  status      CompanyRegistrationRequestStatus @default(PROCESSING)
+  address     Address?
+  owner       User                             @relation(fields: [ownerId], references: [id])
+}
+
+model Company {
+  id          Int          @id @default(autoincrement())
+  name        String
+  description String?
+  taxCode     String
+  logo        String?
+  email       String?
+  phoneNumber String?
+  website     String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ownerId     Int?
+  address     Address?
+  branchs     Branch[]
+  owner       User?        @relation(fields: [ownerId], references: [id])
+  departments Department[]
+  employees   Employee[]
+  positions   Position[]
+}
+
+model Branch {
+  id        Int                @id @default(autoincrement())
+  name      String
+  companyId Int?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  address   Address?
+  company   Company?           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employees EmployeeOnBranch[]
+}
+
+model Department {
+  id          Int                    @id @default(autoincrement())
+  name        String
+  description String
+  managerId   Int?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  companyId   Int?
+  company     Company?               @relation(fields: [companyId], references: [id])
+  manager     User?                  @relation("Manager", fields: [managerId], references: [id])
+  employees   EmployeeOnDepartment[]
+}
+
+model Setting {
+  id     Int    @id @default(autoincrement())
+  roleId Int?   @unique
+  gender Gender @default(OTHER)
+  role   Role?  @relation(fields: [roleId], references: [id])
+}
+
+enum Gender {
+  OTHER
+  MALE
+  FEMALE
+}
+
+enum UserRegistrationRequestStatus {
+  PROCESSING
+  ACCEPTED
+  REJECTED
+}
+
+enum CompanyRegistrationRequestStatus {
+  PROCESSING
+  ACCEPTED
+  REJECTED
+}
