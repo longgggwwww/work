@@ -28,6 +28,7 @@ export class AuthService {
       const account = await this.prismaService.account.upsert({
         where: {
           uid,
+          status: true,
         },
         update: {
           signedAt: new Date().toISOString(),
@@ -78,45 +79,50 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
-    const { idToken, name, gender, dateOfBirth } = registerDto;
+    try {
+      const { idToken, name, gender, dateOfBirth } = registerDto;
 
-    const { uid } = await admin.auth().verifyIdToken(idToken);
-    const {
-      email,
-      providerData: [provider, ..._rest],
-    } = await admin.auth().getUser(uid);
+      const { uid } = await admin.auth().verifyIdToken(idToken);
+      const {
+        email,
+        providerData: [provider, ..._rest],
+      } = await admin.auth().getUser(uid);
 
-    const user = await this.prismaService.user.findUnique({
-      where: { email },
-    });
-    if (user) {
+      const user = await this.prismaService.user.findUnique({
+        where: { email },
+      });
+      if (user) {
+        throw new BadRequestException();
+      }
+
+      const account = await this.prismaService.account.create({
+        data: {
+          uid,
+          identifier: email,
+          provider: provider.providerId,
+          userRegistrationRequest: {
+            create: {
+              name,
+              email,
+              gender,
+              dateOfBirth,
+            },
+          },
+        },
+        include: {
+          userRegistrationRequest: true,
+          user: {
+            include: {
+              profile: true,
+            },
+          },
+        },
+      });
+      return account;
+    } catch (err) {
+      console.log(err);
       throw new BadRequestException();
     }
-
-    const account = await this.prismaService.account.create({
-      data: {
-        uid,
-        identifier: email,
-        provider: provider.providerId,
-        userRegistrationRequest: {
-          create: {
-            name,
-            email,
-            gender,
-            dateOfBirth,
-          },
-        },
-      },
-      include: {
-        userRegistrationRequest: true,
-        user: {
-          include: {
-            profile: true,
-          },
-        },
-      },
-    });
-    return account;
   }
 
   async refreshToken(token: string) {

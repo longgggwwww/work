@@ -45,19 +45,16 @@ export class UserRegistrationRequestService {
   }
 
   async update(
-    id: number,
     updateUserRegistrationRequestDto: UpdateUserRegistrationRequestDto,
   ) {
-    const { idToken, email, name, gender, dateOfBirth } =
+    const { idToken, name, gender, dateOfBirth } =
       updateUserRegistrationRequestDto;
     const { uid } = await admin.auth().verifyIdToken(idToken);
     const request = await this.prismaService.userRegistrationRequest.update({
       where: {
-        id,
         accountId: uid,
       },
       data: {
-        email,
         name,
         gender,
         dateOfBirth,
@@ -85,7 +82,7 @@ export class UserRegistrationRequestService {
     });
     if (status === 'ACCEPTED') {
       const { email, name, gender, dateOfBirth, accountId } = request;
-      const setting = await this.settingService.get();
+      const { roleId } = await this.settingService.get();
       await this.prismaService.user.create({
         data: {
           email,
@@ -100,7 +97,7 @@ export class UserRegistrationRequestService {
           roles: {
             connect: [
               {
-                id: setting.roleId,
+                id: roleId,
               },
             ],
           },

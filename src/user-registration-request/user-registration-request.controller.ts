@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { Permission } from 'src/permission/permission.enum';
 import { RequirePermissions } from 'src/permission/permissions.decorator';
+import { Public } from 'src/public.decorator';
 import { FindUserRegistrationRequestDto } from './dto/find-user-registration-request.dto';
 import {
   ReviewUserRegistrationRequestDto,
@@ -58,13 +59,12 @@ export class UserRegistrationRequestController {
   @ApiOkResponse()
   @ApiBadRequestResponse()
   @ApiNotFoundResponse()
-  @Patch(':id')
+  @Public()
+  @Patch()
   update(
-    @Param('id', ParseIntPipe) id: number,
     @Body() updateUserRegistrationRequestDto: UpdateUserRegistrationRequestDto,
   ) {
     return this.userRegistrationRequestService.update(
-      id,
       updateUserRegistrationRequestDto,
     );
   }

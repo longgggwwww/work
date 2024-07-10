@@ -19,16 +19,15 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { existsSync } from 'fs';
-import { unlink } from 'fs/promises';
+import { existsSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { User, UserType } from 'src/auth/decorators/user.decorator';
 import { Public } from 'src/public.decorator';
-import { UploadUserImgPipe } from 'src/user/upload.pipe';
+import { UploadImagePipe } from 'src/uploading/upload.pipe';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto, UpdateUserProfileDto } from './dto/update-user.dto';
-import { DIR_UPLOAD_USER_IMG } from './user.constance';
+import { DIR_UPLOAD_USER_IMAGE } from './user.constants';
 import { UserService } from './user.service';
 
 @ApiTags('User')
@@ -54,19 +53,19 @@ export class UserController {
           }),
         ],
       }),
-      new UploadUserImgPipe(DIR_UPLOAD_USER_IMG, { width: 500, height: 500 }),
+      new UploadImagePipe(DIR_UPLOAD_USER_IMAGE, { width: 500, height: 500 }),
     )
     image: string,
   ) {
     const user = await this.userService.findOne(id);
-    const file = path.join(process.cwd(), user.profile.image);
     if (user.profile.image) {
+      const file = path.join(process.cwd(), user.profile.image);
       if (existsSync(file)) {
-        await unlink(file);
+        unlinkSync(file);
       }
     }
     const userProfile = await this.userService.updateUserProfile(id, {
-      image: path.join(DIR_UPLOAD_USER_IMG, image),
+      image: path.join(DIR_UPLOAD_USER_IMAGE, image),
     });
     return userProfile;
   }
@@ -77,8 +76,8 @@ export class UserController {
   }
 
   @Get()
-  findMany(@Query() findManyUserDto: FindUserDto) {
-    return this.userService.findMany(findManyUserDto);
+  findMany(@Query() findUserDto: FindUserDto) {
+    return this.userService.findMany(findUserDto);
   }
 
   @Get('me')
@@ -116,7 +115,7 @@ export class UserController {
   }
 
   @Delete('batch')
-  async removeMany(
+  async deleteMany(
     @Body(
       new ParseArrayPipe({
         items: Number,
@@ -133,7 +132,7 @@ export class UserController {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.userService.delete(id);
   }
 }

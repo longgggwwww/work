@@ -51,7 +51,7 @@ export class BranchController {
   }
 
   @Delete('batch')
-  removeBatch(
+  deleteMany(
     @Body(
       new ParseArrayPipe({
         items: Number,
@@ -68,7 +68,7 @@ export class BranchController {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.branchService.delete(id);
   }
 }

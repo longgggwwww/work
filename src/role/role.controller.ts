@@ -24,6 +24,9 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Permission } from 'src/permission/permission.enum';
+import { RequirePermissions } from 'src/permission/permissions.decorator';
+import { AllocRoleDto } from './dto/alloc-role.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { FindRoleDto } from './dto/find-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -40,12 +43,14 @@ export class RoleController {
 
   @ApiCreatedResponse()
   @ApiBadRequestResponse()
+  @RequirePermissions(Permission.CreateRole)
   @Post()
   create(@Body() createRoleDto: CreateRoleDto) {
     return this.roleService.create(createRoleDto);
   }
 
   @ApiOkResponse()
+  @RequirePermissions(Permission.GetRole)
   @Get()
   findMany(@Query() findRoleDto: FindRoleDto) {
     return this.roleService.findMany(findRoleDto);
@@ -53,6 +58,7 @@ export class RoleController {
 
   @ApiOkResponse()
   @ApiNotFoundResponse()
+  @RequirePermissions(Permission.GetRole)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.roleService.findOne(id);
@@ -60,7 +66,24 @@ export class RoleController {
 
   @ApiOkResponse()
   @ApiBadRequestResponse()
+  @RequirePermissions(Permission.AllocRoleToUsers)
+  @Patch('connect-role')
+  connectRole(@Body() connectRoleDto: AllocRoleDto) {
+    return this.roleService.connectRole(connectRoleDto);
+  }
+
+  @ApiOkResponse()
+  @ApiBadRequestResponse()
+  @RequirePermissions(Permission.AllocRoleToUsers)
+  @Patch('disconnect-role')
+  disconnectRole(@Body() disconnectRoleDto: AllocRoleDto) {
+    return this.roleService.disconnectRole(disconnectRoleDto);
+  }
+
+  @ApiOkResponse()
+  @ApiBadRequestResponse()
   @ApiNotFoundResponse()
+  @RequirePermissions(Permission.UpdateRole)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -70,6 +93,8 @@ export class RoleController {
   }
 
   @ApiOkResponse()
+  @ApiBadRequestResponse()
+  @RequirePermissions(Permission.UpdateRole)
   @Delete('batch')
   async deleteMany(
     @Body(
@@ -87,9 +112,11 @@ export class RoleController {
   }
 
   @ApiNoContentResponse()
+  @ApiBadRequestResponse()
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermissions(Permission.UpdateRole)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.roleService.delete(id);
   }
 }

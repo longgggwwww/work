@@ -1,10 +1,16 @@
 export enum Permission {
   CreateUser = 'CREATE_USER',
   CreateRole = 'CREATE_ROLE',
+  GetRole = 'GET_ROLE',
+  UpdateRole = 'UPDATE_ROLE',
+  DeleteRole = 'DELETE_ROLE',
   GetUserRegistrationRequest = 'GET_USER_REGISTRATION_REQUEST',
   ReviewRegistrationRequest = 'REVIEW_REGISTRATION_REQUEST',
   CreateCompany = 'CREATE_COMPANY',
   GetCompany = 'GET_COMPANY',
   UpdateCompany = 'UDPATE_COMPANY',
   DeleteCompany = 'DELETE_COMPANY',
+  GetSetting = 'GET_SETTING',
+  UpdateSetting = 'UPDATE_SETTING',
+  AllocRoleToUsers = 'ALLOC_ROLE_TO_USERS',
 }

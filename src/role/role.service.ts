@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
+import { AllocRoleDto } from './dto/alloc-role.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { FindRoleDto } from './dto/find-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -19,7 +20,12 @@ export class RoleService {
       include: {
         users: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
           },
         },
       },
@@ -39,7 +45,12 @@ export class RoleService {
       include: {
         users: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
           },
         },
       },
@@ -53,7 +64,12 @@ export class RoleService {
       include: {
         users: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
           },
         },
       },
@@ -73,7 +89,66 @@ export class RoleService {
       include: {
         users: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return role;
+  }
+
+  async connectRole(connectRoleDto: AllocRoleDto) {
+    const { roleId, userIds } = connectRoleDto;
+    const role = await this.prisma.role.update({
+      where: {
+        id: roleId,
+      },
+      data: {
+        users: {
+          connect: userIds.map((id) => ({ id })),
+        },
+      },
+      include: {
+        users: {
+          include: {
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return role;
+  }
+
+  async disconnectRole(disconnectRoleDto: AllocRoleDto) {
+    const { roleId, userIds } = disconnectRoleDto;
+    const role = await this.prisma.role.update({
+      where: {
+        id: roleId,
+      },
+      data: {
+        users: {
+          disconnect: userIds.map((id) => ({ id })),
+        },
+      },
+      include: {
+        users: {
+          include: {
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
           },
         },
       },
@@ -87,7 +162,12 @@ export class RoleService {
       include: {
         users: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
           },
         },
       },

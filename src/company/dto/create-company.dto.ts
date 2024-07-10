@@ -81,14 +81,4 @@ export class CreateCompanyDto {
   @ApiProperty()
   @IsNumber()
   ownerId: number;
-
-  @ApiProperty({ isArray: true })
-  @IsNumber(
-    {
-      allowInfinity: false,
-      allowNaN: false,
-    },
-    { each: true },
-  )
-  userIds: number[];
 }

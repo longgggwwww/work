@@ -7,7 +7,7 @@ import * as sharp from 'sharp';
 type Size = { width: number; height: number };
 
 @Injectable()
-export class UploadUserImgPipe implements PipeTransform<Express.Multer.File> {
+export class UploadImagePipe implements PipeTransform<Express.Multer.File> {
   private path: string;
   private size: Size;
 

@@ -29,7 +29,9 @@ export class PermissionsGuard implements CanActivate {
       return true;
     }
     const { user } = ctx.switchToHttp().getRequest();
-    return reqPerms.some((permission) => user.permissions === permission);
+    return reqPerms.some((permission) =>
+      user.permissions.some((perm: string) => perm === permission),
+    );
   }
 
   checkApiKey(ctx: ExecutionContext) {

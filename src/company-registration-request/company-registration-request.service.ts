@@ -32,7 +32,7 @@ export class CompanyRegistrationRequestService {
         email,
         phoneNumber,
         website,
-        address: {
+        address: address && {
           create: {
             street,
             province: {

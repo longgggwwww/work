@@ -28,7 +28,7 @@ export class CompanyService {
         taxCode,
         logo,
         email,
-        address: {
+        address: address && {
           create: {
             street,
             province: {
@@ -57,7 +57,12 @@ export class CompanyService {
           include: {
             user: {
               include: {
-                profile: true,
+                profile: {
+                  include: {
+                    address: true,
+                    idCard: true,
+                  },
+                },
                 roles: true,
               },
             },
@@ -66,7 +71,12 @@ export class CompanyService {
         },
         owner: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
             roles: true,
           },
         },
@@ -93,7 +103,12 @@ export class CompanyService {
           include: {
             user: {
               include: {
-                profile: true,
+                profile: {
+                  include: {
+                    address: true,
+                    idCard: true,
+                  },
+                },
                 roles: true,
               },
             },
@@ -102,7 +117,12 @@ export class CompanyService {
         },
         owner: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
             roles: true,
           },
         },
@@ -123,7 +143,12 @@ export class CompanyService {
           include: {
             user: {
               include: {
-                profile: true,
+                profile: {
+                  include: {
+                    address: true,
+                    idCard: true,
+                  },
+                },
                 roles: true,
               },
             },
@@ -132,7 +157,12 @@ export class CompanyService {
         },
         owner: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
             roles: true,
           },
         },
@@ -165,7 +195,7 @@ export class CompanyService {
         email,
         phoneNumber,
         website,
-        address: {
+        address: address && {
           update: {
             street,
             province: {
@@ -192,7 +222,12 @@ export class CompanyService {
           include: {
             user: {
               include: {
-                profile: true,
+                profile: {
+                  include: {
+                    address: true,
+                    idCard: true,
+                  },
+                },
                 roles: true,
               },
             },
@@ -201,7 +236,12 @@ export class CompanyService {
         },
         owner: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
             roles: true,
           },
         },
@@ -222,7 +262,12 @@ export class CompanyService {
           include: {
             user: {
               include: {
-                profile: true,
+                profile: {
+                  include: {
+                    address: true,
+                    idCard: true,
+                  },
+                },
                 roles: true,
               },
             },
@@ -231,7 +276,12 @@ export class CompanyService {
         },
         owner: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
             roles: true,
           },
         },

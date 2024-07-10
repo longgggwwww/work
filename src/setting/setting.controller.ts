@@ -8,6 +8,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Permission } from 'src/permission/permission.enum';
+import { RequirePermissions } from 'src/permission/permissions.decorator';
 import { UpsertSettingDto } from './dto/upsert-setting.dto';
 import { SettingService } from './setting.service';
 
@@ -21,6 +23,7 @@ export class SettingController {
   constructor(private readonly settingService: SettingService) {}
 
   @ApiOkResponse()
+  @RequirePermissions(Permission.GetSetting)
   @Get()
   get() {
     return this.settingService.get();
@@ -28,6 +31,7 @@ export class SettingController {
 
   @ApiOkResponse()
   @ApiBadRequestResponse()
+  @RequirePermissions(Permission.UpdateSetting)
   @Patch()
   upsert(@Body() upsertSettingDto: UpsertSettingDto) {
     return this.settingService.upsert(upsertSettingDto);
