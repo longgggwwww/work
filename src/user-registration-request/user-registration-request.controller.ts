@@ -1,44 +1,36 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
 } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiForbiddenResponse,
-  ApiInternalServerErrorResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from 'src/permission/permission.enum';
 import { RequirePermissions } from 'src/permission/permissions.decorator';
 import { Public } from 'src/public.decorator';
 import { FindUserRegistrationRequestDto } from './dto/find-user-registration-request.dto';
 import {
-  ReviewUserRegistrationRequestDto,
+  ApproveUserRegistrationRequestDto,
   UpdateUserRegistrationRequestDto,
 } from './dto/update-user-registration-request.dto';
 import { UserRegistrationRequestService } from './user-registration-request.service';
 
 @ApiTags('User Registration Request')
 @ApiBearerAuth()
-@ApiUnauthorizedResponse()
-@ApiForbiddenResponse()
-@ApiInternalServerErrorResponse()
 @Controller('user-registration-requests')
 export class UserRegistrationRequestController {
   constructor(
     private readonly userRegistrationRequestService: UserRegistrationRequestService,
   ) {}
 
-  @ApiOkResponse()
-  @RequirePermissions(Permission.GetUserRegistrationRequest)
+  @RequirePermissions(
+    Permission.GetUserRegistrationRequest,
+    Permission.ApproveUserRegistrationRequest,
+  )
   @Get()
   findMany(
     @Body() findUserRegistrationRequestDto: FindUserRegistrationRequestDto,
@@ -48,17 +40,15 @@ export class UserRegistrationRequestController {
     );
   }
 
-  @ApiOkResponse()
-  @ApiNotFoundResponse()
-  @RequirePermissions(Permission.GetUserRegistrationRequest)
+  @RequirePermissions(
+    Permission.GetUserRegistrationRequest,
+    Permission.ApproveUserRegistrationRequest,
+  )
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userRegistrationRequestService.findOne(id);
   }
 
-  @ApiOkResponse()
-  @ApiBadRequestResponse()
-  @ApiNotFoundResponse()
   @Public()
   @Patch()
   update(
@@ -69,18 +59,39 @@ export class UserRegistrationRequestController {
     );
   }
 
-  @ApiOkResponse()
-  @ApiBadRequestResponse()
-  @ApiNotFoundResponse()
-  @RequirePermissions(Permission.ReviewRegistrationRequest)
+  @RequirePermissions(Permission.ApproveUserRegistrationRequest)
   @Patch(':id/approval')
-  handleRequestApproval(
+  approveRequest(
     @Param('id', ParseIntPipe) id: number,
-    @Body() reviewUserRegistrationRequestDto: ReviewUserRegistrationRequestDto,
+    @Body()
+    approveUserRegistrationRequestDto: ApproveUserRegistrationRequestDto,
   ) {
-    return this.userRegistrationRequestService.handleRequestApproval(
+    return this.userRegistrationRequestService.approveRequest(
       id,
-      reviewUserRegistrationRequestDto,
+      approveUserRegistrationRequestDto,
     );
+  }
+
+  @RequirePermissions(Permission.DeleteUserRegistrationRequest)
+  @Delete('batch')
+  async deleteMany(
+    @Body(
+      new ParseArrayPipe({
+        items: Number,
+        whitelist: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+      }),
+    )
+    ids: number[],
+  ) {
+    return this.userRegistrationRequestService.deleteMany(ids);
+  }
+
+  @RequirePermissions(Permission.DeleteUserRegistrationRequest)
+  @Delete(':id')
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.userRegistrationRequestService.delete(id);
   }
 }

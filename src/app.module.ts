@@ -12,6 +12,7 @@ import { SettingModule } from './setting/setting.module';
 import { UploadModule } from './uploading/uploading.module';
 import { UserRegistrationRequestModule } from './user-registration-request/user-registration-request.module';
 import { UserModule } from './user/user.module';
+import { EmployeeModule } from './employee/employee.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UserModule } from './user/user.module';
     UploadModule,
     UserRegistrationRequestModule,
     CompanyRegistrationRequestModule,
+    EmployeeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -18,10 +18,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { existsSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { User, UserType } from 'src/auth/decorators/user.decorator';
+import { Permission } from 'src/permission/permission.enum';
+import { RequirePermissions } from 'src/permission/permissions.decorator';
 import { Public } from 'src/public.decorator';
 import { UploadImagePipe } from 'src/uploading/upload.pipe';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -32,9 +34,6 @@ import { UserService } from './user.service';
 
 @ApiTags('User')
 @ApiBearerAuth()
-@ApiResponse({ status: 401, description: 'Require Bearer Token' })
-@ApiResponse({ status: 403, description: 'Permission Denied' })
-@ApiResponse({ status: 500, description: 'Internal Server Error' })
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -70,11 +69,13 @@ export class UserController {
     return userProfile;
   }
 
+  @RequirePermissions(Permission.CreateAndModifyUser)
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
+  @RequirePermissions(Permission.GetUser, Permission.CreateAndModifyUser)
   @Get()
   findMany(@Query() findUserDto: FindUserDto) {
     return this.userService.findMany(findUserDto);
@@ -85,6 +86,7 @@ export class UserController {
     return this.userService.findOne(user.id);
   }
 
+  @RequirePermissions(Permission.GetUser, Permission.CreateAndModifyUser)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne(id);
@@ -98,6 +100,7 @@ export class UserController {
     return this.userService.updateUserProfile(user.id, updateProfileDto);
   }
 
+  @RequirePermissions(Permission.CreateAndModifyUser)
   @Patch(':id/profile')
   updateUserProfile(
     @Param('id', ParseIntPipe) id: number,
@@ -106,6 +109,7 @@ export class UserController {
     return this.userService.updateUserProfile(id, updateProfileDto);
   }
 
+  @RequirePermissions(Permission.CreateAndModifyUser)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -114,6 +118,7 @@ export class UserController {
     return this.userService.update(id, updateUserDto);
   }
 
+  @RequirePermissions(Permission.DeleteUser)
   @Delete('batch')
   async deleteMany(
     @Body(
@@ -130,6 +135,7 @@ export class UserController {
     return this.userService.deleteMany(ids);
   }
 
+  @RequirePermissions(Permission.DeleteUser)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {

@@ -18,39 +18,26 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiForbiddenResponse,
-  ApiInternalServerErrorResponse,
-  ApiNoContentResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { existsSync, unlinkSync } from 'fs';
 import * as path from 'path';
+import { User, UserType } from 'src/auth/decorators/user.decorator';
 import { Permission } from 'src/permission/permission.enum';
 import { RequirePermissions } from 'src/permission/permissions.decorator';
 import { UploadImagePipe } from 'src/uploading/upload.pipe';
 import { DIR_UPLOAD_COMPANY_IMAGE } from './company.constants';
 import { CompanyService } from './company.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
-import { findCompanyDto } from './dto/find-company.dto';
+import { FindCompanyDto } from './dto/find-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @ApiTags('Company')
 @ApiBearerAuth()
-@ApiUnauthorizedResponse()
-@ApiForbiddenResponse()
-@ApiInternalServerErrorResponse()
 @Controller('companies')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
-  @RequirePermissions(Permission.CreateCompany)
+  @RequirePermissions(Permission.CreateAndModifyCompany)
   @Post(':id/upload')
   @UseInterceptors(FileInterceptor('image'))
   async uploadFile(
@@ -84,33 +71,33 @@ export class CompanyController {
     return company;
   }
 
-  @ApiCreatedResponse()
-  @ApiBadRequestResponse()
-  @RequirePermissions(Permission.CreateCompany)
+  @RequirePermissions(Permission.CreateAndModifyCompany)
   @Post()
   create(@Body() createCompanyDto: CreateCompanyDto) {
     return this.companyService.create(createCompanyDto);
   }
 
-  @ApiOkResponse()
-  @RequirePermissions(Permission.GetCompany)
+  @RequirePermissions(Permission.GetCompany, Permission.CreateAndModifyCompany)
   @Get()
-  findMany(@Query() findManyCompanyDto: findCompanyDto) {
-    return this.companyService.findMany(findManyCompanyDto);
+  findMany(@Query() findCompanyDto: FindCompanyDto) {
+    return this.companyService.findMany(findCompanyDto);
   }
 
-  @ApiOkResponse()
-  @ApiNotFoundResponse()
-  @RequirePermissions(Permission.GetCompany)
+  @Get('my-companies')
+  findMyCompanies(
+    @User() user: UserType,
+    @Query() findCompanyDto: FindCompanyDto,
+  ) {
+    return this.companyService.findMyCompanies(user.id, findCompanyDto);
+  }
+
+  @RequirePermissions(Permission.GetCompany, Permission.CreateAndModifyCompany)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.companyService.findOne(id);
   }
 
-  @ApiOkResponse()
-  @ApiBadRequestResponse()
-  @ApiNotFoundResponse()
-  @RequirePermissions(Permission.UpdateCompany)
+  @RequirePermissions(Permission.CreateAndModifyCompany)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -119,8 +106,6 @@ export class CompanyController {
     return this.companyService.update(id, updateCompanyDto);
   }
 
-  @ApiOkResponse()
-  @ApiBadRequestResponse()
   @RequirePermissions(Permission.DeleteCompany)
   @Delete('batch')
   deleteMany(
@@ -138,8 +123,6 @@ export class CompanyController {
     return this.companyService.deleteMany(ids);
   }
 
-  @ApiNoContentResponse()
-  @ApiBadRequestResponse()
   @RequirePermissions(Permission.DeleteCompany)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')

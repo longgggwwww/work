@@ -12,78 +12,52 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiForbiddenResponse,
-  ApiInternalServerErrorResponse,
-  ApiNoContentResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from 'src/permission/permission.enum';
 import { RequirePermissions } from 'src/permission/permissions.decorator';
-import { AllocRoleDto } from './dto/alloc-role.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { FindRoleDto } from './dto/find-role.dto';
+import { GrantRoleDto } from './dto/grant-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { RoleService } from './role.service';
 
 @ApiTags('Role')
 @ApiBearerAuth()
-@ApiUnauthorizedResponse()
-@ApiForbiddenResponse()
-@ApiInternalServerErrorResponse()
 @Controller('roles')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
-  @ApiCreatedResponse()
-  @ApiBadRequestResponse()
-  @RequirePermissions(Permission.CreateRole)
+  @RequirePermissions(Permission.CreateAndModifyRole)
   @Post()
   create(@Body() createRoleDto: CreateRoleDto) {
     return this.roleService.create(createRoleDto);
   }
 
-  @ApiOkResponse()
-  @RequirePermissions(Permission.GetRole)
+  @RequirePermissions(Permission.GetRole, Permission.CreateAndModifyRole)
   @Get()
   findMany(@Query() findRoleDto: FindRoleDto) {
     return this.roleService.findMany(findRoleDto);
   }
 
-  @ApiOkResponse()
-  @ApiNotFoundResponse()
-  @RequirePermissions(Permission.GetRole)
+  @RequirePermissions(Permission.GetRole, Permission.CreateAndModifyRole)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.roleService.findOne(id);
   }
 
-  @ApiOkResponse()
-  @ApiBadRequestResponse()
-  @RequirePermissions(Permission.AllocRoleToUsers)
-  @Patch('connect-role')
-  connectRole(@Body() connectRoleDto: AllocRoleDto) {
-    return this.roleService.connectRole(connectRoleDto);
+  @RequirePermissions(Permission.GrantRoleToUser)
+  @Patch('grant')
+  grantRole(@Body() grantRoleDto: GrantRoleDto) {
+    return this.roleService.grantRole(grantRoleDto);
   }
 
-  @ApiOkResponse()
-  @ApiBadRequestResponse()
-  @RequirePermissions(Permission.AllocRoleToUsers)
-  @Patch('disconnect-role')
-  disconnectRole(@Body() disconnectRoleDto: AllocRoleDto) {
-    return this.roleService.disconnectRole(disconnectRoleDto);
+  @RequirePermissions(Permission.GrantRoleToUser)
+  @Patch('revoke')
+  revokeRole(@Body() revokeRoleDto: GrantRoleDto) {
+    return this.roleService.revokeRole(revokeRoleDto);
   }
 
-  @ApiOkResponse()
-  @ApiBadRequestResponse()
-  @ApiNotFoundResponse()
-  @RequirePermissions(Permission.UpdateRole)
+  @RequirePermissions(Permission.CreateAndModifyRole)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -92,9 +66,7 @@ export class RoleController {
     return this.roleService.update(id, updateRoleDto);
   }
 
-  @ApiOkResponse()
-  @ApiBadRequestResponse()
-  @RequirePermissions(Permission.UpdateRole)
+  @RequirePermissions(Permission.DeleteRole)
   @Delete('batch')
   async deleteMany(
     @Body(
@@ -111,10 +83,8 @@ export class RoleController {
     return this.roleService.deleteMany(ids);
   }
 
-  @ApiNoContentResponse()
-  @ApiBadRequestResponse()
+  @RequirePermissions(Permission.DeleteRole)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @RequirePermissions(Permission.UpdateRole)
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.roleService.delete(id);

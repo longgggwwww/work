@@ -85,6 +85,25 @@ export class UserService {
           },
         },
         roles: true,
+        owned: {
+          include: {
+            address: true,
+          },
+        },
+        companies: {
+          include: {
+            company: {
+              include: {
+                address: true,
+              },
+            },
+            positions: {
+              include: {
+                position: true,
+              },
+            },
+          },
+        },
       },
     });
     return user;
@@ -107,6 +126,25 @@ export class UserService {
           },
         },
         roles: true,
+        owned: {
+          include: {
+            address: true,
+          },
+        },
+        companies: {
+          include: {
+            company: {
+              include: {
+                address: true,
+              },
+            },
+            positions: {
+              include: {
+                position: true,
+              },
+            },
+          },
+        },
       },
     });
     return users;
@@ -116,6 +154,7 @@ export class UserService {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id },
       include: {
+        account: true,
         profile: {
           include: {
             address: true,
@@ -123,6 +162,30 @@ export class UserService {
           },
         },
         roles: true,
+        owned: {
+          include: {
+            address: true,
+          },
+        },
+        companies: {
+          include: {
+            company: {
+              include: {
+                address: true,
+              },
+            },
+            positions: {
+              include: {
+                position: true,
+              },
+            },
+          },
+        },
+        companyRegistrationRequests: {
+          include: {
+            address: true,
+          },
+        },
       },
     });
     return user;
@@ -147,6 +210,25 @@ export class UserService {
           },
         },
         roles: true,
+        owned: {
+          include: {
+            address: true,
+          },
+        },
+        companies: {
+          include: {
+            company: {
+              include: {
+                address: true,
+              },
+            },
+            positions: {
+              include: {
+                position: true,
+              },
+            },
+          },
+        },
       },
     });
     return user;
@@ -261,6 +343,25 @@ export class UserService {
           },
         },
         roles: true,
+        owned: {
+          include: {
+            address: true,
+          },
+        },
+        companies: {
+          include: {
+            company: {
+              include: {
+                address: true,
+              },
+            },
+            positions: {
+              include: {
+                position: true,
+              },
+            },
+          },
+        },
       },
     });
     return user;

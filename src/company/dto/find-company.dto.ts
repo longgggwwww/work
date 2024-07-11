@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import { IsEnum, IsIn, IsNumber, IsOptional } from 'class-validator';
 
-export class findCompanyDto {
+export class FindCompanyDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()

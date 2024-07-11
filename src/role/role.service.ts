@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { AllocRoleDto } from './dto/alloc-role.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { FindRoleDto } from './dto/find-role.dto';
+import { GrantRoleDto } from './dto/grant-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 
 @Injectable()
@@ -102,8 +102,8 @@ export class RoleService {
     return role;
   }
 
-  async connectRole(connectRoleDto: AllocRoleDto) {
-    const { roleId, userIds } = connectRoleDto;
+  async grantRole(grantRoleDto: GrantRoleDto) {
+    const { roleId, userIds } = grantRoleDto;
     const role = await this.prisma.role.update({
       where: {
         id: roleId,
@@ -129,8 +129,8 @@ export class RoleService {
     return role;
   }
 
-  async disconnectRole(disconnectRoleDto: AllocRoleDto) {
-    const { roleId, userIds } = disconnectRoleDto;
+  async revokeRole(revokeRole: GrantRoleDto) {
+    const { roleId, userIds } = revokeRole;
     const role = await this.prisma.role.update({
       where: {
         id: roleId,

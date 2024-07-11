@@ -45,7 +45,6 @@ model User {
   accountId                   String?                      @unique
   owned                       Company[]
   companyRegistrationRequests CompanyRegistrationRequest[]
-  departments                 Department[]                 @relation("Manager")
   companies                   Employee[]
   profile                     Profile?
   account                     Account?                     @relation(fields: [accountId], references: [uid])
@@ -53,15 +52,16 @@ model User {
 }
 
 model Employee {
-  id         String
-  userId     Int
-  companyId  Int
-  assignedAt DateTime               @default(now())
-  company    Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  branchs    EmployeeOnBranch[]
-  department EmployeeOnDepartment[]
-  positions  EmployeeOnPosition[]
+  id                String
+  userId            Int
+  companyId         Int
+  assignedAt        DateTime               @default(now())
+  company           Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branchs           EmployeeOnBranch[]
+  departments       EmployeeOnDepartment[]
+  positions         EmployeeOnPosition[]
+  manageDepartments Department[]
 
   @@id([userId, companyId])
   @@unique([id, companyId])
@@ -210,16 +210,17 @@ model Branch {
 }
 
 model Department {
-  id          Int                    @id @default(autoincrement())
-  name        String
-  description String
-  managerId   Int?
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  companyId   Int?
-  company     Company?               @relation(fields: [companyId], references: [id])
-  manager     User?                  @relation("Manager", fields: [managerId], references: [id])
-  employees   EmployeeOnDepartment[]
+  id               Int                    @id @default(autoincrement())
+  name             String
+  description      String
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  companyId        Int?
+  company          Company?               @relation(fields: [companyId], references: [id])
+  employees        EmployeeOnDepartment[]
+  manager          Employee?              @relation(fields: [managerUserId, managerCompanyId], references: [userId, companyId])
+  managerUserId    Int
+  managerCompanyId Int
 }
 
 model Setting {

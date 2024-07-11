@@ -16,7 +16,7 @@ export class UpdateUserRegistrationRequestDto extends PartialType(
   email: string;
 }
 
-export class ReviewUserRegistrationRequestDto {
+export class ApproveUserRegistrationRequestDto {
   @ApiProperty({
     enum: $Enums.UserRegistrationRequestStatus,
   })

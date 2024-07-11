@@ -21,10 +21,11 @@ export class FindCompanyRegistrationRequestDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsIn(Object.keys(Prisma.CompanyScalarFieldEnum))
-  field?: Prisma.CompanyScalarFieldEnum = Prisma.CompanyScalarFieldEnum.name;
+  field?: Prisma.CompanyScalarFieldEnum =
+    Prisma.CompanyScalarFieldEnum.updatedAt;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsEnum(Prisma.SortOrder)
-  order?: Prisma.SortOrder = Prisma.SortOrder.asc;
+  order?: Prisma.SortOrder = Prisma.SortOrder.desc;
 }

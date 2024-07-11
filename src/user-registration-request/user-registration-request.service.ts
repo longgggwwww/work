@@ -4,7 +4,7 @@ import { PrismaService } from 'nestjs-prisma';
 import { SettingService } from 'src/setting/setting.service';
 import { FindUserRegistrationRequestDto } from './dto/find-user-registration-request.dto';
 import {
-  ReviewUserRegistrationRequestDto,
+  ApproveUserRegistrationRequestDto,
   UpdateUserRegistrationRequestDto,
 } from './dto/update-user-registration-request.dto';
 
@@ -27,7 +27,21 @@ export class UserRegistrationRequestService {
         [`${field}`]: order,
       },
       include: {
-        account: true,
+        account: {
+          include: {
+            user: {
+              include: {
+                profile: {
+                  include: {
+                    address: true,
+                    idCard: true,
+                  },
+                },
+                roles: true,
+              },
+            },
+          },
+        },
       },
     });
     return requests;
@@ -38,7 +52,21 @@ export class UserRegistrationRequestService {
       await this.prismaService.userRegistrationRequest.findUniqueOrThrow({
         where: { id },
         include: {
-          account: true,
+          account: {
+            include: {
+              user: {
+                include: {
+                  profile: {
+                    include: {
+                      address: true,
+                      idCard: true,
+                    },
+                  },
+                  roles: true,
+                },
+              },
+            },
+          },
         },
       });
     return request;
@@ -53,6 +81,7 @@ export class UserRegistrationRequestService {
     const request = await this.prismaService.userRegistrationRequest.update({
       where: {
         accountId: uid,
+        status: 'PROCESSING',
       },
       data: {
         name,
@@ -60,24 +89,55 @@ export class UserRegistrationRequestService {
         dateOfBirth,
       },
       include: {
-        account: true,
+        account: {
+          include: {
+            user: {
+              include: {
+                profile: {
+                  include: {
+                    address: true,
+                    idCard: true,
+                  },
+                },
+                roles: true,
+              },
+            },
+          },
+        },
       },
     });
     return request;
   }
 
-  async handleRequestApproval(
+  async approveRequest(
     id: number,
-    reviewUserRegistrationRequestDto: ReviewUserRegistrationRequestDto,
+    approveUserRegistrationRequestDto: ApproveUserRegistrationRequestDto,
   ) {
-    const { status } = reviewUserRegistrationRequestDto;
+    const { status } = approveUserRegistrationRequestDto;
     const request = await this.prismaService.userRegistrationRequest.update({
-      where: { id },
+      where: {
+        id,
+        status: 'PROCESSING',
+      },
       data: {
         status,
       },
       include: {
-        account: true,
+        account: {
+          include: {
+            user: {
+              include: {
+                profile: {
+                  include: {
+                    address: true,
+                    idCard: true,
+                  },
+                },
+                roles: true,
+              },
+            },
+          },
+        },
       },
     });
     if (status === 'ACCEPTED') {

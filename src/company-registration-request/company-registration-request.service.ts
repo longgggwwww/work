@@ -2,13 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateCompanyRegistrationRequestDto } from './dto/create-company-registration-request.dto';
 import { FindCompanyRegistrationRequestDto } from './dto/find-company-registration-request.dto';
-import { UpdateCompanyRegistrationRequestDto } from './dto/update-company-registration-request.dto';
+import {
+  ApproveCompanyRegistrationRequestDto,
+  UpdateCompanyRegistrationRequestDto,
+} from './dto/update-company-registration-request.dto';
 
 @Injectable()
 export class CompanyRegistrationRequestService {
   constructor(private prismaService: PrismaService) {}
 
-  async create(
+  async register(
     ownerId: number,
     createCompanyRegistrationRequestDto: CreateCompanyRegistrationRequestDto,
   ) {
@@ -55,7 +58,12 @@ export class CompanyRegistrationRequestService {
         address: true,
         owner: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
           },
         },
       },
@@ -63,7 +71,7 @@ export class CompanyRegistrationRequestService {
     return request;
   }
 
-  async findAll(
+  async findMany(
     findCompanyRegistrationRequestDto: FindCompanyRegistrationRequestDto,
   ) {
     const { id, take, skip, field, order } = findCompanyRegistrationRequestDto;
@@ -79,7 +87,12 @@ export class CompanyRegistrationRequestService {
           address: true,
           owner: {
             include: {
-              profile: true,
+              profile: {
+                include: {
+                  address: true,
+                  idCard: true,
+                },
+              },
             },
           },
         },
@@ -104,6 +117,7 @@ export class CompanyRegistrationRequestService {
   }
 
   async update(
+    actorId: number,
     id: number,
     updateCompanyRegistrationRequestDto: UpdateCompanyRegistrationRequestDto,
   ) {
@@ -119,7 +133,10 @@ export class CompanyRegistrationRequestService {
     } = updateCompanyRegistrationRequestDto;
     const { street, province, district, ward } = address || {};
     const request = await this.prismaService.companyRegistrationRequest.update({
-      where: { id },
+      where: {
+        id,
+        ownerId: actorId,
+      },
       data: {
         name,
         description,
@@ -128,7 +145,7 @@ export class CompanyRegistrationRequestService {
         email,
         phoneNumber,
         website,
-        address: {
+        address: address && {
           upsert: {
             where: {
               companyRegistrationRequestId: id,
@@ -170,11 +187,85 @@ export class CompanyRegistrationRequestService {
         address: true,
         owner: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
+            roles: true,
           },
         },
       },
     });
+    return request;
+  }
+
+  async approveRequest(
+    actorId: number,
+    id: number,
+    approveCompanyRegistrationRequest: ApproveCompanyRegistrationRequestDto,
+  ) {
+    const { status } = approveCompanyRegistrationRequest;
+    const request = await this.prismaService.companyRegistrationRequest.update({
+      where: {
+        id,
+        ownerId: actorId,
+        status: 'PROCESSING',
+      },
+      data: {
+        status,
+      },
+      include: {
+        address: true,
+        owner: {
+          include: {
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
+            roles: true,
+          },
+        },
+      },
+    });
+    if (status === 'ACCEPTED') {
+      const {
+        name,
+        description,
+        taxCode,
+        logo,
+        email,
+        phoneNumber,
+        website,
+        address,
+        ownerId,
+      } = request;
+      const { street, province, district, ward } = address || {};
+      console.log(province);
+      await this.prismaService.company.create({
+        data: {
+          name,
+          description,
+          taxCode,
+          logo,
+          email,
+          phoneNumber,
+          website,
+          address: address && {
+            create: {
+              street,
+              province,
+              district,
+              ward,
+            },
+          },
+          ownerId,
+        },
+      });
+    }
     return request;
   }
 
@@ -185,7 +276,12 @@ export class CompanyRegistrationRequestService {
         address: true,
         owner: {
           include: {
-            profile: true,
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
           },
         },
       },

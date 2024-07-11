@@ -14,40 +14,35 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiForbiddenResponse,
-  ApiInternalServerErrorResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { existsSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { User, UserType } from 'src/auth/decorators/user.decorator';
+import { Permission } from 'src/permission/permission.enum';
+import { RequirePermissions } from 'src/permission/permissions.decorator';
 import { UploadImagePipe } from 'src/uploading/upload.pipe';
 import { DIR_UPLOAD_COMPANY_REGISTRATION_REQUEST_IMAGE } from './company-registration-request.constants';
 import { CompanyRegistrationRequestService } from './company-registration-request.service';
 import { CreateCompanyRegistrationRequestDto } from './dto/create-company-registration-request.dto';
 import { FindCompanyRegistrationRequestDto } from './dto/find-company-registration-request.dto';
-import { UpdateCompanyRegistrationRequestDto } from './dto/update-company-registration-request.dto';
+import {
+  ApproveCompanyRegistrationRequestDto,
+  UpdateCompanyRegistrationRequestDto,
+} from './dto/update-company-registration-request.dto';
 
 @ApiTags('Company Registration Request')
 @ApiBearerAuth()
-@ApiUnauthorizedResponse()
-@ApiForbiddenResponse()
-@ApiInternalServerErrorResponse()
 @Controller('company-registration-requests')
 export class CompanyRegistrationRequestController {
   constructor(
     private readonly companyRegistrationRequestService: CompanyRegistrationRequestService,
   ) {}
 
+  @RequirePermissions(Permission.RegisterCompany)
   @Post(':id/upload')
   @UseInterceptors(FileInterceptor('image'))
   async uploadFile(
+    @User() user: UserType,
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile(
       new ParseFilePipe({
@@ -66,60 +61,83 @@ export class CompanyRegistrationRequestController {
     image: string,
   ) {
     const { logo } = await this.companyRegistrationRequestService.findOne(id);
-    const file = path.join(process.cwd(), logo);
     if (logo) {
+      const file = path.join(process.cwd(), logo);
       if (existsSync(file)) {
         unlinkSync(file);
       }
     }
-    const request = await this.companyRegistrationRequestService.update(id, {
-      logo: path.join(DIR_UPLOAD_COMPANY_REGISTRATION_REQUEST_IMAGE, image),
-    });
+    const request = await this.companyRegistrationRequestService.update(
+      user.id,
+      id,
+      { logo: path.join(DIR_UPLOAD_COMPANY_REGISTRATION_REQUEST_IMAGE, image) },
+    );
     return request;
   }
 
-  @ApiOkResponse()
-  @ApiBadRequestResponse()
+  @RequirePermissions(Permission.RegisterCompany)
   @Post()
-  create(
+  register(
     @User() user: UserType,
     @Body()
-    createCompanyRegistrationRequestDto: CreateCompanyRegistrationRequestDto,
+    registerCompanyRegistrationRequestDto: CreateCompanyRegistrationRequestDto,
   ) {
-    return this.companyRegistrationRequestService.create(
+    return this.companyRegistrationRequestService.register(
       user.id,
-      createCompanyRegistrationRequestDto,
+      registerCompanyRegistrationRequestDto,
     );
   }
 
-  @ApiOkResponse()
+  @RequirePermissions(
+    Permission.RegisterCompany,
+    Permission.GetCompanyRegistrationRequest,
+    Permission.ApproveCompanyRegistrationRequest,
+  )
   @Get()
-  findAll(
+  findMany(
     @Query()
     findCompanyRegistrationRequestDto: FindCompanyRegistrationRequestDto,
   ) {
-    return this.companyRegistrationRequestService.findAll(
+    return this.companyRegistrationRequestService.findMany(
       findCompanyRegistrationRequestDto,
     );
   }
 
-  @ApiOkResponse()
-  @ApiNotFoundResponse()
+  @RequirePermissions(
+    Permission.RegisterCompany,
+    Permission.GetCompanyRegistrationRequest,
+    Permission.ApproveUserRegistrationRequest,
+  )
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.companyRegistrationRequestService.findOne(id);
   }
 
-  @ApiOkResponse()
-  @ApiNotFoundResponse()
-  @ApiBadRequestResponse()
+  @RequirePermissions(Permission.ApproveCompanyRegistrationRequest)
+  @Patch(':id/approval')
+  approveRequest(
+    @User() user: UserType,
+    @Param('id', ParseIntPipe) id: number,
+    @Body()
+    approveCompanyRegistrationRequest: ApproveCompanyRegistrationRequestDto,
+  ) {
+    return this.companyRegistrationRequestService.approveRequest(
+      user.id,
+      id,
+      approveCompanyRegistrationRequest,
+    );
+  }
+
+  @RequirePermissions(Permission.RegisterCompany)
   @Patch(':id')
   update(
+    @User() user: UserType,
     @Param('id', ParseIntPipe) id: number,
     @Body()
     updateCompanyRegistrationRequestDto: UpdateCompanyRegistrationRequestDto,
   ) {
     return this.companyRegistrationRequestService.update(
+      user.id,
       id,
       updateCompanyRegistrationRequestDto,
     );

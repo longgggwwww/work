@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateCompanyDto } from './dto/create-company.dto';
-import { findCompanyDto } from './dto/find-company.dto';
+import { FindCompanyDto } from './dto/find-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Injectable()
@@ -86,7 +86,56 @@ export class CompanyService {
     return company;
   }
 
-  async findMany(findCompanyDto: findCompanyDto) {
+  async findMyCompanies(actorId: number, findCompanyDto: FindCompanyDto) {
+    const { id, take, skip, field, order } = findCompanyDto;
+    const companies = await this.prisma.company.findMany({
+      where: {
+        ownerId: actorId,
+      },
+      cursor: id && { id },
+      take,
+      skip,
+      orderBy: field && {
+        [`${field}`]: order,
+      },
+      include: {
+        address: true,
+        branchs: true,
+        departments: true,
+        employees: {
+          include: {
+            user: {
+              include: {
+                profile: {
+                  include: {
+                    address: true,
+                    idCard: true,
+                  },
+                },
+                roles: true,
+              },
+            },
+            positions: true,
+          },
+        },
+        owner: {
+          include: {
+            profile: {
+              include: {
+                address: true,
+                idCard: true,
+              },
+            },
+            roles: true,
+          },
+        },
+        positions: true,
+      },
+    });
+    return companies;
+  }
+
+  async findMany(findCompanyDto: FindCompanyDto) {
     const { id, take, skip, field, order } = findCompanyDto;
     const companies = await this.prisma.company.findMany({
       cursor: id && { id },

@@ -13,9 +13,9 @@ async function main() {
       name: 'Admin',
       slug: 'admin',
       permissions: [
-        Permission.CreateUser,
-        Permission.CreateRole,
-        Permission.ReviewRegistrationRequest,
+        Permission.CreateAndModifyUser,
+        Permission.CreateAndModifyRole,
+        Permission.ApproveCompanyRegistrationRequest,
       ],
     },
   });

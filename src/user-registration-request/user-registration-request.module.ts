@@ -8,10 +8,10 @@ import { UserRegistrationRequestService } from './user-registration-request.serv
 @Module({
   controllers: [UserRegistrationRequestController],
   providers: [
+    UserRegistrationRequestGateway,
     UserRegistrationRequestService,
     PrismaService,
     SettingService,
-    UserRegistrationRequestGateway,
   ],
 })
 export class UserRegistrationRequestModule {}
