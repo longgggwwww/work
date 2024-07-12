@@ -12,11 +12,7 @@ async function main() {
     create: {
       name: 'Admin',
       slug: 'admin',
-      permissions: [
-        Permission.CreateAndModifyUser,
-        Permission.CreateAndModifyRole,
-        Permission.ApproveCompanyRegistrationRequest,
-      ],
+      permissions: Object.values(Permission),
     },
   });
   const user = await prisma.role.upsert({
@@ -30,7 +26,6 @@ async function main() {
       permissions: [],
     },
   });
-
   const setting = await prisma.setting.upsert({
     where: { id: 1 },
     update: {
@@ -39,6 +34,63 @@ async function main() {
     create: {
       roleId: user.id,
       gender: $Enums.Gender.OTHER,
+    },
+  });
+  const root = await prisma.user.upsert({
+    where: {
+      email: 'info@iit.vn',
+    },
+    update: {
+      email: 'info@iit.vn',
+      profile: {
+        upsert: {
+          where: {
+            user: {
+              email: 'info@iit.vn',
+            },
+          },
+          update: {
+            name: 'IIT JSC',
+            email: 'info@iit.vn',
+            gender: 'OTHER',
+            dateOfBirth: new Date('2023-01-01'),
+            image: 'uploads/users/default',
+          },
+          create: {
+            name: 'IIT JSC',
+            email: 'info@iit.vn',
+            gender: 'OTHER',
+            dateOfBirth: new Date('2023-01-01'),
+            image: 'uploads/users/default',
+          },
+        },
+      },
+      roles: {
+        connect: [
+          {
+            id: admin.id,
+          },
+        ],
+      },
+    },
+    create: {
+      email: 'info@iit.vn',
+      profile: {
+        create: {
+          name: 'IIT JSC',
+          email: 'info@iit.vn',
+          gender: 'OTHER',
+          dateOfBirth: new Date('2023-01-01'),
+          image: 'uploads/users/default',
+        },
+      },
+      roles: {
+        connect: [
+          {
+            id: admin.id,
+          },
+        ],
+      },
     },
   });
 }

@@ -35,7 +35,6 @@ Table User {
   accountId String [unique]
   owned Company [not null]
   companyRegistrationRequests CompanyRegistrationRequest [not null]
-  departments Department [not null]
   companies Employee [not null]
   profile Profile
   account Account
@@ -50,8 +49,9 @@ Table Employee {
   company Company [not null]
   user User [not null]
   branchs EmployeeOnBranch [not null]
-  department EmployeeOnDepartment [not null]
+  departments EmployeeOnDepartment [not null]
   positions EmployeeOnPosition [not null]
+  manageDepartments Department [not null]
 
   indexes {
     (userId, companyId) [pk]
@@ -211,13 +211,14 @@ Table Department {
   id Int [pk, increment]
   name String [not null]
   description String [not null]
-  managerId Int
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   companyId Int
   company Company
-  manager User
   employees EmployeeOnDepartment [not null]
+  manager Employee
+  managerUserId Int [not null]
+  managerCompanyId Int [not null]
 }
 
 Table Setting {
@@ -292,6 +293,6 @@ Ref: Branch.companyId > Company.id [delete: Cascade]
 
 Ref: Department.companyId > Company.id
 
-Ref: Department.managerId > User.id
+Ref: Department.(managerUserId, managerCompanyId) > Employee.(userId, companyId)
 
 Ref: Setting.roleId - Role.id

@@ -201,10 +201,11 @@ CREATE TABLE "Department" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "managerId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "companyId" INTEGER,
+    "managerUserId" INTEGER NOT NULL,
+    "managerCompanyId" INTEGER NOT NULL,
 
     CONSTRAINT "Department_pkey" PRIMARY KEY ("id")
 );
@@ -339,7 +340,7 @@ ALTER TABLE "Branch" ADD CONSTRAINT "Branch_companyId_fkey" FOREIGN KEY ("compan
 ALTER TABLE "Department" ADD CONSTRAINT "Department_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Department" ADD CONSTRAINT "Department_managerId_fkey" FOREIGN KEY ("managerId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Department" ADD CONSTRAINT "Department_managerUserId_managerCompanyId_fkey" FOREIGN KEY ("managerUserId", "managerCompanyId") REFERENCES "Employee"("userId", "companyId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Setting" ADD CONSTRAINT "Setting_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE SET NULL ON UPDATE CASCADE;

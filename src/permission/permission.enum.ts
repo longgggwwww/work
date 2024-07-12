@@ -22,4 +22,12 @@ export enum Permission {
   CreateAndModifyUser = 'CREATE_AND_MODIFY_USER',
   GetUser = 'GET_USER',
   DeleteUser = 'DELETE_USER',
+
+  GetPosition = 'GET_POSITION',
+  CreateAndModifyPosition = 'CREATE_AND_MODIFY_POSITION',
+  DeletePosition = 'DELETE_POSITION',
+
+  GetEmployee = 'GET_EMPLOYEE',
+  AddEmployee = 'ADD_EMPLOYEE',
+  FireEmployee = 'FIRE_EMPLOYEE',
 }

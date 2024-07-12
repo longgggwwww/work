@@ -13,6 +13,7 @@ import { UploadModule } from './uploading/uploading.module';
 import { UserRegistrationRequestModule } from './user-registration-request/user-registration-request.module';
 import { UserModule } from './user/user.module';
 import { EmployeeModule } from './employee/employee.module';
+import { PositionModule } from './position/position.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { EmployeeModule } from './employee/employee.module';
     UserRegistrationRequestModule,
     CompanyRegistrationRequestModule,
     EmployeeModule,
+    PositionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

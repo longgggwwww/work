@@ -56,12 +56,12 @@ model Employee {
   userId            Int
   companyId         Int
   assignedAt        DateTime               @default(now())
+  manageDepartments Department[]
   company           Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   branchs           EmployeeOnBranch[]
   departments       EmployeeOnDepartment[]
   positions         EmployeeOnPosition[]
-  manageDepartments Department[]
 
   @@id([userId, companyId])
   @@unique([id, companyId])
@@ -216,11 +216,11 @@ model Department {
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
   companyId        Int?
-  company          Company?               @relation(fields: [companyId], references: [id])
-  employees        EmployeeOnDepartment[]
-  manager          Employee?              @relation(fields: [managerUserId, managerCompanyId], references: [userId, companyId])
   managerUserId    Int
   managerCompanyId Int
+  company          Company?               @relation(fields: [companyId], references: [id])
+  manager          Employee               @relation(fields: [managerUserId, managerCompanyId], references: [userId, companyId])
+  employees        EmployeeOnDepartment[]
 }
 
 model Setting {

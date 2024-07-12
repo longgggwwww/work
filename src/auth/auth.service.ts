@@ -21,8 +21,11 @@ export class AuthService {
         providerData: [provider, ..._rest],
       } = await admin.auth().getUser(uid);
 
-      const user = await this.prismaService.user.findUnique({
+      const user = await this.prismaService.user.update({
         where: { email },
+        data: {
+          accountId: uid,
+        },
       });
 
       const account = await this.prismaService.account.upsert({
