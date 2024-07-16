@@ -21,11 +21,8 @@ export class AuthService {
         providerData: [provider, ..._rest],
       } = await admin.auth().getUser(uid);
 
-      const user = await this.prismaService.user.update({
+      const user = await this.prismaService.user.findUnique({
         where: { email },
-        data: {
-          accountId: uid,
-        },
       });
 
       const account = await this.prismaService.account.upsert({
@@ -98,8 +95,24 @@ export class AuthService {
         throw new BadRequestException();
       }
 
-      const account = await this.prismaService.account.create({
-        data: {
+      const account = await this.prismaService.account.upsert({
+        where: {
+          uid,
+        },
+        update: {
+          uid,
+          identifier: email,
+          provider: provider.providerId,
+          userRegistrationRequest: {
+            create: {
+              name,
+              email,
+              gender,
+              dateOfBirth,
+            },
+          },
+        },
+        create: {
           uid,
           identifier: email,
           provider: provider.providerId,

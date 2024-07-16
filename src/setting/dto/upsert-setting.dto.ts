@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { $Enums } from '@prisma/client';
+import { Gender } from '@prisma/client';
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
 
 export class UpsertSettingDto {
@@ -8,8 +8,8 @@ export class UpsertSettingDto {
   @IsNumber()
   roleId?: number;
 
-  @ApiPropertyOptional({ enum: $Enums.Gender })
+  @ApiPropertyOptional({ enum: Gender })
   @IsOptional()
-  @IsEnum($Enums.Gender)
-  gender?: $Enums.Gender;
+  @IsEnum(Gender)
+  gender?: Gender;
 }

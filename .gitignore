@@ -400,3 +400,5 @@ data
 .webpack
 .serverless/**/*.zip
 service-account.json
+uploads
+!uploads/users/default

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { $Enums } from '@prisma/client';
+import { Gender } from '@prisma/client';
 import { IsDate, IsEnum, IsString } from 'class-validator';
 
 export class CreateUserRegistrationRequestDto {
@@ -11,9 +11,9 @@ export class CreateUserRegistrationRequestDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ enum: $Enums.Gender })
-  @IsEnum($Enums.Gender)
-  gender: $Enums.Gender;
+  @ApiProperty({ enum: Gender })
+  @IsEnum(Gender)
+  gender: Gender;
 
   @ApiProperty()
   @IsDate()

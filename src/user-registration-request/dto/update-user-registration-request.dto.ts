@@ -1,5 +1,5 @@
 import { ApiHideProperty, ApiProperty, PartialType } from '@nestjs/swagger';
-import { $Enums } from '@prisma/client';
+import { UserRegistrationRequestStatus } from '@prisma/client';
 import { Exclude } from 'class-transformer';
 import { IsEnum, IsString } from 'class-validator';
 import { CreateUserRegistrationRequestDto } from './create-user-registration-request.dto';
@@ -18,8 +18,8 @@ export class UpdateUserRegistrationRequestDto extends PartialType(
 
 export class ApproveUserRegistrationRequestDto {
   @ApiProperty({
-    enum: $Enums.UserRegistrationRequestStatus,
+    enum: UserRegistrationRequestStatus,
   })
-  @IsEnum($Enums.UserRegistrationRequestStatus)
-  status: $Enums.UserRegistrationRequestStatus;
+  @IsEnum(UserRegistrationRequestStatus)
+  status: UserRegistrationRequestStatus;
 }

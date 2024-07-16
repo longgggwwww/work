@@ -1,67 +1,98 @@
-import { $Enums, PrismaClient } from '@prisma/client';
+import { Gender, PrismaClient } from '@prisma/client';
 import { Permission } from '../src/permission/permission.enum';
 
 const prisma = new PrismaClient();
 
+const roles = {
+  admin: {
+    name: 'Administrator',
+    slug: 'admin',
+    permissions: Object.values(Permission),
+  },
+  user: {
+    name: 'User',
+    slug: 'user',
+    permissions: [],
+  },
+};
+
+const rootUserInfo = {
+  email: 'info@iit.vn',
+  name: 'IIT JOINT STOCK COMPANY',
+  gender: Gender.OTHER,
+  dateOfBirth: new Date('2022-12-27'),
+  image: 'uploads/users/default',
+};
+
 async function main() {
   const admin = await prisma.role.upsert({
     where: {
-      slug: 'admin',
+      slug: roles.admin.slug,
     },
-    update: {},
     create: {
-      name: 'Admin',
-      slug: 'admin',
-      permissions: Object.values(Permission),
+      name: roles.admin.name,
+      slug: roles.admin.slug,
+      permissions: roles.admin.permissions,
+    },
+    update: {
+      name: roles.admin.name,
+      slug: roles.admin.slug,
+      permissions: roles.admin.permissions,
     },
   });
   const user = await prisma.role.upsert({
     where: {
-      slug: 'user',
+      slug: roles.user.slug,
     },
-    update: {},
     create: {
-      name: 'User',
-      slug: 'user',
-      permissions: [],
+      name: roles.user.name,
+      slug: roles.user.slug,
+      permissions: roles.user.permissions,
+    },
+    update: {
+      name: roles.user.name,
+      slug: roles.user.slug,
+      permissions: roles.user.permissions,
     },
   });
-  const setting = await prisma.setting.upsert({
+
+  await prisma.setting.upsert({
     where: { id: 1 },
     update: {
       roleId: user.id,
     },
     create: {
       roleId: user.id,
-      gender: $Enums.Gender.OTHER,
+      gender: Gender.OTHER,
     },
   });
-  const root = await prisma.user.upsert({
+
+  const defaultUser = await prisma.user.upsert({
     where: {
-      email: 'info@iit.vn',
+      email: rootUserInfo.email,
     },
     update: {
-      email: 'info@iit.vn',
+      email: rootUserInfo.email,
       profile: {
         upsert: {
           where: {
             user: {
-              email: 'info@iit.vn',
+              email: rootUserInfo.email,
             },
           },
           update: {
-            name: 'IIT JSC',
-            email: 'info@iit.vn',
-            gender: 'OTHER',
-            dateOfBirth: new Date('2023-01-01'),
-            image: 'uploads/users/default',
+            name: rootUserInfo.name,
+            email: rootUserInfo.email,
+            gender: rootUserInfo.gender,
+            dateOfBirth: rootUserInfo.dateOfBirth,
+            image: rootUserInfo.image,
           },
           create: {
-            name: 'IIT JSC',
-            email: 'info@iit.vn',
-            gender: 'OTHER',
-            dateOfBirth: new Date('2023-01-01'),
-            image: 'uploads/users/default',
+            name: rootUserInfo.name,
+            email: rootUserInfo.email,
+            gender: rootUserInfo.gender,
+            dateOfBirth: rootUserInfo.dateOfBirth,
+            image: rootUserInfo.image,
           },
         },
       },
@@ -74,14 +105,14 @@ async function main() {
       },
     },
     create: {
-      email: 'info@iit.vn',
+      email: rootUserInfo.email,
       profile: {
         create: {
-          name: 'IIT JSC',
-          email: 'info@iit.vn',
-          gender: 'OTHER',
-          dateOfBirth: new Date('2023-01-01'),
-          image: 'uploads/users/default',
+          name: rootUserInfo.name,
+          email: rootUserInfo.email,
+          gender: rootUserInfo.gender,
+          dateOfBirth: rootUserInfo.dateOfBirth,
+          image: rootUserInfo.image,
         },
       },
       roles: {
@@ -93,6 +124,7 @@ async function main() {
       },
     },
   });
+  console.log(defaultUser);
 }
 
 main()

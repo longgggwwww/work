@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { $Enums } from '@prisma/client';
+import { Gender } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -64,8 +64,8 @@ export class CreateUserProfileDto {
   name: string;
 
   @ApiProperty()
-  @IsEnum($Enums.Gender)
-  gender: $Enums.Gender;
+  @IsEnum(Gender)
+  gender: Gender;
 
   @ApiProperty()
   @IsDate()
